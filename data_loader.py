@@ -1,31 +1,23 @@
-# data_loader.py
-
 import streamlit as st
-import nfl_data_py as nfl
 import pandas as pd
+import nfl_data_py as nfl
 
-@st.cache_data(ttl=3600)
-def load_schedule_and_weekly_data(year):
-    schedule_df = nfl.import_schedules([year])
-    weekly_df = nfl.import_weekly_data([year])
-    team_desc_df = nfl.import_team_desc()
-    return schedule_df, weekly_df, team_desc_df
-
-@st.cache_data(ttl=3600)
-def load_historical_data(years):
-    all_schedules = []
-    for year in years:
-        try:
-            schedule = nfl.import_schedules([year])
-            all_schedules.append(schedule)
-        except Exception as e:
-            print(f"Could not load schedule for year {year}: {e}")
-    if not all_schedules:
-        return pd.DataFrame()
-    historical_schedule_df = pd.concat(all_schedules, ignore_index=True)
-    return historical_schedule_df
-
-@st.cache_data
+@st.cache_data(show_spinner=f"Loading play-by-play data for {{year}}...")
 def load_full_season_pbp(year):
-    pbp_df = nfl.import_pbp_data([year])
-    return pbp_df
+    """
+    Loads the full play-by-play dataset for a given year.
+    Includes a more robust error handling block to prevent crashes on data fetch failures.
+    """
+    try:
+        # The nfl_data_py library can sometimes have issues fetching data.
+        # This block will catch potential errors during the download.
+        pbp_df = nfl.import_pbp_data([year])
+        if pbp_df.empty:
+            st.error(f"No play-by-play data could be loaded for the {year} season. The data source may be temporarily unavailable.")
+            return pd.DataFrame()
+        return pbp_df
+    except Exception as e:
+        # This is a general catch-all. The nfl_data_py library has a bug
+        # where it can raise a NameError on a failed download. This prevents the app from crashing.
+        st.error(f"Failed to download data for the {year} season. The data source may be down. Please try again later. Error: {e}")
+        return pd.DataFrame()
