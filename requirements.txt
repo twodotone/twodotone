@@ -1,5 +1,5 @@
 streamlit
-pandas
+pandas<2.0
 scikit-learn
 numpy
 scipy
@@ -10,4 +10,5 @@ plotly
 seaborn
 matplotlib
 statsmodels
-nfl-data-py
+nfl_data_py
+
