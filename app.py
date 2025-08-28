@@ -75,6 +75,7 @@ else:
             col5.image(home_logo, width=70)
 
         # --- Data Prep based on Mode ---
+        
         if CURRENT_YEAR >= 2025:
             st.info("Displaying **live predictions** for the upcoming season based on prior year data.")
             prediction_year = CURRENT_YEAR - 1
@@ -86,10 +87,16 @@ else:
             pbp_data_full_season = load_full_season_pbp(prediction_year)
             pbp_data_for_stats = pbp_data_full_season[pbp_data_full_season['week'] < CURRENT_WEEK]
 
+        # --- Add this check to gracefully stop if data loading failed ---
+        if pbp_data_for_stats.empty:
+            st.warning("Could not retrieve the necessary play-by-play data. Please try again later.")
+            st.stop() # This stops the app from running further.
+
         # --- Stat Calculation ---
         with st.spinner('Calculating team stats...'):
             away_stats_std = calculate_granular_epa_stats(pbp_data_for_stats, away_abbr, use_sos_adjustment)
             home_stats_std = calculate_granular_epa_stats(pbp_data_for_stats, home_abbr, use_sos_adjustment)
+
             
             # The generated spread is from the home team's perspective. A positive value means home is favored.
             # We must invert it to match the standard convention (favorite is negative).
