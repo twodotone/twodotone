@@ -11,5 +11,6 @@ seaborn
 matplotlib
 statsmodels
 nfl-data-py
+pyarrow
 
 
